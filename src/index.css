@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-neutral-50 text-neutral-900 dark:bg-neutral-900 dark:text-neutral-100;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-neutral-50 rounded-lg shadow-md border border-neutral-200 dark:bg-neutral-800 dark:border-neutral-700;
+  }
+  
+  .btn-primary {
+    @apply bg-primary-500 hover:bg-primary-600 text-neutral-50 font-medium py-2 px-4 rounded-lg transition-colors;
+  }
+  
+  .btn-secondary {
+    @apply bg-neutral-200 hover:bg-neutral-300 text-neutral-800 font-medium py-2 px-4 rounded-lg transition-colors dark:bg-neutral-700 dark:hover:bg-neutral-600 dark:text-neutral-200;
+  }
+  
+  .stat-card {
+    @apply bg-gradient-to-br from-primary-50 to-blue-50 p-6 rounded-xl text-center dark:from-neutral-800 dark:to-neutral-700;
+  }
+}
