@@ -43,12 +43,12 @@ export default function AdminPanel() {
   };
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-gray-200 dark:border-gray-700 min-w-[320px]">
-      <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 text-center flex items-center justify-center">
+    <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl shadow-md p-6 border border-gray-200 dark:border-gray-700 max-w-lg mx-auto">
+      <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white mb-6 text-center flex items-center justify-center">
         <i className="fas fa-cogs mr-3 text-blue-500"></i>Data Scraping Panel
       </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
         {/* Exam Type */}
         <div>
           <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2 flex items-center">
@@ -78,29 +78,29 @@ export default function AdminPanel() {
             max={new Date().getFullYear()}
           />
         </div>
+      </div>
 
-        {/* Trigger Button */}
-        <div className="flex items-end">
-          <button
-            onClick={triggerScraping}
-            disabled={scrapingStatus === 'in_progress'}
-            className={`w-full py-3 px-6 rounded-xl font-semibold transition-all flex justify-center items-center ${
-              scrapingStatus === 'in_progress'
-                ? 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed text-gray-100 dark:text-gray-300'
-                : 'bg-blue-500 hover:bg-blue-600 text-white'
-            }`}
-          >
-            {scrapingStatus === 'in_progress' ? (
-              <>
-                <i className="fas fa-spinner fa-spin mr-2"></i>Scraping...
-              </>
-            ) : (
-              <>
-                <i className="fas fa-download mr-2"></i>Start Scraping
-              </>
-            )}
-          </button>
-        </div>
+      {/* Trigger Button */}
+      <div className="mb-6">
+        <button
+          onClick={triggerScraping}
+          disabled={scrapingStatus === 'in_progress'}
+          className={`w-full py-3 px-6 rounded-xl font-semibold transition-all flex justify-center items-center ${
+            scrapingStatus === 'in_progress'
+              ? 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed text-gray-100 dark:text-gray-300'
+              : 'bg-blue-500 hover:bg-blue-600 text-white'
+          }`}
+        >
+          {scrapingStatus === 'in_progress' ? (
+            <>
+              <i className="fas fa-spinner fa-spin mr-2"></i>Scraping...
+            </>
+          ) : (
+            <>
+              <i className="fas fa-download mr-2"></i>Start Scraping
+            </>
+          )}
+        </button>
       </div>
 
       {/* Message */}
