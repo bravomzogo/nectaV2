@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:8000/api' && 'https://necta-backend.onrender.com/api';
+const API_BASE = 'http://localhost:8000/api' || 'https://necta-backend.onrender.com/api';
 
 export const api = {
   async getHomeData() {
