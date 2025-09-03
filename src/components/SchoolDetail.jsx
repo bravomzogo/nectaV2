@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api } from '../services/api';
 import {
@@ -63,6 +63,7 @@ export default function SchoolDetail() {
   // Chart options and data
   const chartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         labels: {
@@ -158,6 +159,7 @@ export default function SchoolDetail() {
 
   const divisionChartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         position: 'right',
@@ -218,269 +220,293 @@ export default function SchoolDetail() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+      <div className="min-h-screen flex justify-center items-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary-500"></div>
       </div>
     );
   }
 
   if (!data) {
-    return <div className="text-center py-12 text-red-500">Error loading school data</div>;
+    return (
+      <div className="min-h-screen flex flex-col justify-center items-center">
+        <div className="text-red-500 text-xl mb-4">Error loading school data</div>
+        <Link
+          to="/rankings/ACSEE/2023"
+          className="bg-gradient-to-r from-purple-600 to-teal-500 text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition-opacity"
+        >
+          Back to Rankings
+        </Link>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-6 text-gray-900 dark:text-gray-100">
-      {/* Breadcrumb */}
-      <nav className="text-sm mb-4">
-        <ol className="flex space-x-2">
-          <li>
-            <Link to="/" className="text-blue-400 hover:text-blue-300">
-              Home
-            </Link>
-          </li>
-          <li className="before:content-['/'] before:mx-2 text-gray-500">
-            <Link to="/rankings/ACSEE/2023" className="text-blue-400 hover:text-blue-300">
-              ACSEE 2023 Rankings
-            </Link>
-          </li>
-          <li className="before:content-['/'] before:mx-2 text-gray-300">
-            {data.school.name}
-          </li>
-        </ol>
-      </nav>
+    <div className="min-h-screen bg-gray-900 text-gray-100 p-4 md:p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Breadcrumb */}
+        <nav className="text-sm mb-4">
+          <ol className="flex space-x-2">
+            <li>
+              <Link to="/" className="text-blue-400 hover:text-blue-300">
+                Home
+              </Link>
+            </li>
+            <li className="before:content-['/'] before:mx-2 text-gray-500">
+              <Link to="/rankings/ACSEE/2023" className="text-blue-400 hover:text-blue-300">
+                ACSEE 2023 Rankings
+              </Link>
+            </li>
+            <li className="before:content-['/'] before:mx-2 text-gray-300">
+              {data.school.name}
+            </li>
+          </ol>
+        </nav>
 
-      {/* School Header */}
-      <div className="bg-gradient-to-r from-purple-800 to-indigo-800 text-white p-6 rounded-xl shadow-lg">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">{data.school.name}</h1>
-            <p className="mb-1">
-              <strong>Code:</strong> {data.school.code}
-            </p>
-            <p>
-              <strong>Region:</strong> {data.school.region}
-            </p>
-          </div>
-          <div className="mt-4 md:mt-0 bg-gray-900 text-white px-4 py-2 rounded-lg shadow-sm">
-            <i className="fas fa-clipboard-list mr-2"></i>
-            {data.results.length} Records
-          </div>
-        </div>
-      </div>
-
-      {/* Exam Type Tabs */}
-      <div className="flex justify-center space-x-2 mb-6 border-b border-gray-700 pb-4">
-        {['all', 'CSEE', 'ACSEE'].map((examType) => (
-          <button
-            key={examType}
-            onClick={() => setActiveExamTab(examType)}
-            className={`px-4 py-2 rounded-full ${
-              activeExamTab === examType
-                ? 'bg-gradient-to-r from-purple-600 to-teal-500 text-white'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-            }`}
-          >
-            {examType === 'all' ? 'All Results' : `${examType} Results`}
-          </button>
-        ))}
-      </div>
-
-      {/* Graph Type Tabs */}
-      <div className="flex justify-center flex-wrap gap-2 mb-6">
-        {['gpa', 'division', 'comparison'].map((graphType) => (
-          <button
-            key={graphType}
-            onClick={() => setActiveGraphTab(graphType)}
-            className={`px-3 py-2 rounded-lg text-sm ${
-              activeGraphTab === graphType
-                ? 'bg-gradient-to-r from-purple-600 to-teal-500 text-white'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-            }`}
-          >
-            {graphType === 'gpa' && 'GPA Trends'}
-            {graphType === 'division' && 'Division Distribution'}
-            {graphType === 'comparison' && 'Performance Comparison'}
-          </button>
-        ))}
-      </div>
-
-      {/* GPA Charts */}
-      {activeGraphTab === 'gpa' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <div className="bg-gray-800 p-6 rounded-xl shadow-lg">
-            <h3 className="text-xl font-semibold mb-4 text-blue-400 text-center">
-              CSEE GPA Trend
-            </h3>
-            {cseeResults.length > 0 ? (
-              <Line
-                data={gpaChartData(cseeResults, '#74b9ff', 'rgba(116,185,255,0.15)')}
-                options={gpaChartOptions}
-              />
-            ) : (
-              <div className="text-center py-12 text-gray-400">
-                No CSEE data available
-              </div>
-            )}
-          </div>
-
-          <div className="bg-gray-800 p-6 rounded-xl shadow-lg">
-            <h3 className="text-xl font-semibold mb-4 text-teal-400 text-center">
-              ACSEE GPA Trend
-            </h3>
-            {acseeResults.length > 0 ? (
-              <Line
-                data={gpaChartData(acseeResults, '#00cec9', 'rgba(0,206,201,0.15)')}
-                options={gpaChartOptions}
-              />
-            ) : (
-              <div className="text-center py-12 text-gray-400">
-                No ACSEE data available
-              </div>
-            )}
+        {/* School Header */}
+        <div className="bg-gradient-to-r from-purple-800 to-indigo-800 text-white p-6 rounded-xl shadow-lg">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">{data.school.name}</h1>
+              <p className="mb-1">
+                <strong>Code:</strong> {data.school.code}
+              </p>
+              <p>
+                <strong>Region:</strong> {data.school.region}
+              </p>
+            </div>
+            <div className="mt-4 md:mt-0 bg-gray-900 text-white px-4 py-2 rounded-lg shadow-sm">
+              <i className="fas fa-clipboard-list mr-2"></i>
+              {data.results.length} Records
+            </div>
           </div>
         </div>
-      )}
 
-      {/* Division Charts */}
-      {activeGraphTab === 'division' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <div className="bg-gray-800 p-6 rounded-xl shadow-lg">
-            <h3 className="text-xl font-semibold mb-4 text-blue-400 text-center">
-              CSEE Division Distribution
-              {cseeResults.length > 0 && ` (${cseeResults[cseeResults.length - 1].year})`}
-            </h3>
-            {cseeResults.length > 0 ? (
-              <Doughnut
-                data={divisionChartData(cseeResults[cseeResults.length - 1])}
-                options={divisionChartOptions}
-              />
-            ) : (
-              <div className="text-center py-12 text-gray-400">
-                No CSEE data available
-              </div>
-            )}
-          </div>
-
-          <div className="bg-gray-800 p-6 rounded-xl shadow-lg">
-            <h3 className="text-xl font-semibold mb-4 text-teal-400 text-center">
-              ACSEE Division Distribution
-              {acseeResults.length > 0 && ` (${acseeResults[acseeResults.length - 1].year})`}
-            </h3>
-            {acseeResults.length > 0 ? (
-              <Doughnut
-                data={divisionChartData(acseeResults[acseeResults.length - 1])}
-                options={divisionChartOptions}
-              />
-            ) : (
-              <div className="text-center py-12 text-gray-400">
-                No ACSEE data available
-              </div>
-            )}
-          </div>
+        {/* Exam Type Tabs */}
+        <div className="flex justify-center space-x-2 mb-6 border-b border-gray-700 pb-4">
+          {['all', 'CSEE', 'ACSEE'].map((examType) => (
+            <button
+              key={examType}
+              onClick={() => setActiveExamTab(examType)}
+              className={`px-4 py-2 rounded-full ${
+                activeExamTab === examType
+                  ? 'bg-gradient-to-r from-purple-600 to-teal-500 text-white'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              {examType === 'all' ? 'All Results' : `${examType} Results`}
+            </button>
+          ))}
         </div>
-      )}
 
-      {/* Comparison Charts */}
-      {activeGraphTab === 'comparison' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <div className="bg-gray-800 p-6 rounded-xl shadow-lg">
-            <h3 className="text-xl font-semibold mb-4 text-blue-400 text-center">
-              CSEE vs ACSEE GPA Comparison
-            </h3>
-            {cseeResults.length > 0 && acseeResults.length > 0 ? (
-              <Bar
-                data={comparisonChartData(
-                  cseeResults[cseeResults.length - 1],
-                  acseeResults[acseeResults.length - 1],
-                  cseeResults[cseeResults.length - 1].year
+        {/* Graph Type Tabs */}
+        <div className="flex justify-center flex-wrap gap-2 mb-6">
+          {['gpa', 'division', 'comparison'].map((graphType) => (
+            <button
+              key={graphType}
+              onClick={() => setActiveGraphTab(graphType)}
+              className={`px-3 py-2 rounded-lg text-sm ${
+                activeGraphTab === graphType
+                  ? 'bg-gradient-to-r from-purple-600 to-teal-500 text-white'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              {graphType === 'gpa' && 'GPA Trends'}
+              {graphType === 'division' && 'Division Distribution'}
+              {graphType === 'comparison' && 'Performance Comparison'}
+            </button>
+          ))}
+        </div>
+
+        {/* GPA Charts */}
+        {activeGraphTab === 'gpa' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div className="bg-gray-800 p-6 rounded-xl shadow-lg">
+              <h3 className="text-xl font-semibold mb-4 text-blue-400 text-center">
+                CSEE GPA Trend
+              </h3>
+              <div className="h-80">
+                {cseeResults.length > 0 ? (
+                  <Line
+                    data={gpaChartData(cseeResults, '#74b9ff', 'rgba(116,185,255,0.15)')}
+                    options={gpaChartOptions}
+                  />
+                ) : (
+                  <div className="h-full flex items-center justify-center text-gray-400">
+                    No CSEE data available
+                  </div>
                 )}
-                options={chartOptions}
-              />
-            ) : (
-              <div className="text-center py-12 text-gray-400">
-                Comparison data not available
               </div>
-            )}
-          </div>
+            </div>
 
-          <div className="bg-gray-800 p-6 rounded-xl shadow-lg">
-            <h3 className="text-xl font-semibold mb-4 text-teal-400 text-center">
-              Division I Comparison
-            </h3>
-            {cseeResults.length > 0 && acseeResults.length > 0 ? (
-              <Bar
-                data={divisionComparisonData(
-                  cseeResults[cseeResults.length - 1],
-                  acseeResults[acseeResults.length - 1],
-                  cseeResults[cseeResults.length - 1].year
+            <div className="bg-gray-800 p-6 rounded-xl shadow-lg">
+              <h3 className="text-xl font-semibold mb-4 text-teal-400 text-center">
+                ACSEE GPA Trend
+              </h3>
+              <div className="h-80">
+                {acseeResults.length > 0 ? (
+                  <Line
+                    data={gpaChartData(acseeResults, '#00cec9', 'rgba(0,206,201,0.15)')}
+                    options={gpaChartOptions}
+                  />
+                ) : (
+                  <div className="h-full flex items-center justify-center text-gray-400">
+                    No ACSEE data available
+                  </div>
                 )}
-                options={chartOptions}
-              />
-            ) : (
-              <div className="text-center py-12 text-gray-400">
-                Comparison data not available
               </div>
-            )}
+            </div>
+          </div>
+        )}
+
+        {/* Division Charts */}
+        {activeGraphTab === 'division' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div className="bg-gray-800 p-6 rounded-xl shadow-lg">
+              <h3 className="text-xl font-semibold mb-4 text-blue-400 text-center">
+                CSEE Division Distribution
+                {cseeResults.length > 0 && ` (${cseeResults[cseeResults.length - 1].year})`}
+              </h3>
+              <div className="h-80">
+                {cseeResults.length > 0 ? (
+                  <Doughnut
+                    data={divisionChartData(cseeResults[cseeResults.length - 1])}
+                    options={divisionChartOptions}
+                  />
+                ) : (
+                  <div className="h-full flex items-center justify-center text-gray-400">
+                    No CSEE data available
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="bg-gray-800 p-6 rounded-xl shadow-lg">
+              <h3 className="text-xl font-semibold mb-4 text-teal-400 text-center">
+                ACSEE Division Distribution
+                {acseeResults.length > 0 && ` (${acseeResults[acseeResults.length - 1].year})`}
+              </h3>
+              <div className="h-80">
+                {acseeResults.length > 0 ? (
+                  <Doughnut
+                    data={divisionChartData(acseeResults[acseeResults.length - 1])}
+                    options={divisionChartOptions}
+                  />
+                ) : (
+                  <div className="h-full flex items-center justify-center text-gray-400">
+                    No ACSEE data available
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Comparison Charts */}
+        {activeGraphTab === 'comparison' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div className="bg-gray-800 p-6 rounded-xl shadow-lg">
+              <h3 className="text-xl font-semibold mb-4 text-blue-400 text-center">
+                CSEE vs ACSEE GPA Comparison
+              </h3>
+              <div className="h-80">
+                {cseeResults.length > 0 && acseeResults.length > 0 ? (
+                  <Bar
+                    data={comparisonChartData(
+                      cseeResults[cseeResults.length - 1],
+                      acseeResults[acseeResults.length - 1],
+                      cseeResults[cseeResults.length - 1].year
+                    )}
+                    options={chartOptions}
+                  />
+                ) : (
+                  <div className="h-full flex items-center justify-center text-gray-400">
+                    Comparison data not available
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="bg-gray-800 p-6 rounded-xl shadow-lg">
+              <h3 className="text-xl font-semibold mb-4 text-teal-400 text-center">
+                Division I Comparison
+              </h3>
+              <div className="h-80">
+                {cseeResults.length > 0 && acseeResults.length > 0 ? (
+                  <Bar
+                    data={divisionComparisonData(
+                      cseeResults[cseeResults.length - 1],
+                      acseeResults[acseeResults.length - 1],
+                      cseeResults[cseeResults.length - 1].year
+                    )}
+                    options={chartOptions}
+                  />
+                ) : (
+                  <div className="h-full flex items-center justify-center text-gray-400">
+                    Comparison data not available
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Exam Results Table */}
+        <div className="bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+          <div className="bg-gradient-to-r from-purple-700 to-indigo-700 text-white p-4">
+            <h2 className="text-xl font-semibold">
+              <i className="fas fa-history mr-2"></i>Exam Results History
+            </h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-700">
+                <tr>
+                  <th className="p-3 text-left">Year</th>
+                  <th className="p-3 text-left">Exam Type</th>
+                  <th className="p-3 text-center">GPA</th>
+                  <th className="p-3 text-center">Div I</th>
+                  <th className="p-3 text-center">Div II</th>
+                  <th className="p-3 text-center">Div III</th>
+                  <th className="p-3 text-center">Div IV</th>
+                  <th className="p-3 text-center">Div 0</th>
+                  <th className="p-3 text-center">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.results
+                  .filter(result => activeExamTab === 'all' || result.exam === activeExamTab)
+                  .map((result) => (
+                    <tr
+                      key={`${result.exam}-${result.year}`}
+                      className="border-b border-gray-700 hover:bg-gray-750"
+                    >
+                      <td className="p-3 font-bold">{result.year}</td>
+                      <td className="p-3">{result.exam}</td>
+                      <td className="p-3 text-center font-bold text-blue-400">
+                        {result.gpa.toFixed(4)}
+                      </td>
+                      <td className="p-3 text-center text-green-400">{result.division1}</td>
+                      <td className="p-3 text-center text-blue-400">{result.division2}</td>
+                      <td className="p-3 text-center text-yellow-400">{result.division3}</td>
+                      <td className="p-3 text-center text-gray-400">{result.division4}</td>
+                      <td className="p-3 text-center text-red-400">{result.division0}</td>
+                      <td className="p-3 text-center font-bold text-white">{result.total}</td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
           </div>
         </div>
-      )}
 
-      {/* Exam Results Table */}
-      <div className="bg-gray-800 rounded-xl shadow-lg overflow-hidden">
-        <div className="bg-gradient-to-r from-purple-700 to-indigo-700 text-white p-4">
-          <h2 className="text-xl font-semibold">
-            <i className="fas fa-history mr-2"></i>Exam Results History
-          </h2>
+        {/* Back Button */}
+        <div className="text-center mt-6">
+          <Link
+            to="/rankings/ACSEE/2023"
+            className="inline-block bg-gradient-to-r from-purple-600 to-teal-500 text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity"
+          >
+            <i className="fas fa-arrow-left mr-2"></i>Back to Rankings
+          </Link>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-700">
-              <tr>
-                <th className="p-3 text-left">Year</th>
-                <th className="p-3 text-left">Exam Type</th>
-                <th className="p-3 text-center">GPA</th>
-                <th className="p-3 text-center">Div I</th>
-                <th className="p-3 text-center">Div II</th>
-                <th className="p-3 text-center">Div III</th>
-                <th className="p-3 text-center">Div IV</th>
-                <th className="p-3 text-center">Div 0</th>
-                <th className="p-3 text-center">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.results
-                .filter(result => activeExamTab === 'all' || result.exam === activeExamTab)
-                .map((result) => (
-                  <tr
-                    key={`${result.exam}-${result.year}`}
-                    className="border-b border-gray-700 hover:bg-gray-750"
-                  >
-                    <td className="p-3 font-bold">{result.year}</td>
-                    <td className="p-3">{result.exam}</td>
-                    <td className="p-3 text-center font-bold text-blue-400">
-                      {result.gpa.toFixed(4)}
-                    </td>
-                    <td className="p-3 text-center text-green-400">{result.division1}</td>
-                    <td className="p-3 text-center text-blue-400">{result.division2}</td>
-                    <td className="p-3 text-center text-yellow-400">{result.division3}</td>
-                    <td className="p-3 text-center text-gray-400">{result.division4}</td>
-                    <td className="p-3 text-center text-red-400">{result.division0}</td>
-                    <td className="p-3 text-center font-bold text-white">{result.total}</td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Back Button */}
-      <div className="text-center mt-6">
-        <Link
-          to="/rankings/ACSEE/2023"
-          className="bg-gradient-to-r from-purple-600 to-teal-500 text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity"
-        >
-          <i className="fas fa-arrow-left mr-2"></i>Back to Rankings
-        </Link>
       </div>
     </div>
   );
